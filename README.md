@@ -13,7 +13,7 @@ Options:
   -h, --help                                 output usage information
 
 Commands:
-  streamable|s <username> <password> [file]  Add streamables under your account.
+  streamable|s <username> <password> [file]  Add Streamable videos under your account.
 ```
 
 ### Install

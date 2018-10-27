@@ -12,7 +12,7 @@ program
 program
   .command('streamable <username> <password> [file]')
   .alias('s')
-  .description('Add streamables under your account.')
+  .description('Add Streamable videos under your account.')
   .action((username, password, file) => {
     streamable(username, password, file);
   });
