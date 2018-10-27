@@ -27,7 +27,7 @@ Commands:
       $ npm -v
       6.4.1
       ```
-  3. Download the [full npm-upload source zip](https://github.com/remixz/to-streamable/archive/master.zip) from this GitHub repository.
+  3. Download the [full npm-upload source zip](https://github.com/mathison42/npm-upload/archive/master.zip) from this GitHub repository.
   4. Extract it and place the contents somewhere safe.
   5. (Optional) Navigate to the newly extracted npm-upload folder and run: `npm link`
 
