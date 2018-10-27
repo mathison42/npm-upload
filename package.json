@@ -1,0 +1,19 @@
+{
+  "name": "upload",
+  "version": "0.1.0",
+  "description": "Upload files into streamable",
+  "main": "index.js",
+  "repository": "https://github.com/mathison42/stream-upload",
+  "author": "Nick Mathison",
+  "license": "MIT",
+  "preferGlobal": true,
+  "bin": "./src/upload.js",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "inquirer": "^3.0.6",
+    "mongoose": "^4.9.2",
+    "fs": "*",
+    "request": "*",
+    "path": "*"
+  }
+}
