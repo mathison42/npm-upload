@@ -19,7 +19,7 @@ Commands:
 ### Install
 
   1. Install [Node.Js and npm](https://nodejs.org/en/). (It's a single installation.)
-  2. Confirm they are install correctly by running `node -v` and `npm -v`
+  2. Confirm they are installed correctly by running `node -v` and `npm -v`
     - You should see something like:
       ```
       $ node -v
@@ -30,9 +30,9 @@ Commands:
   3. Download the [full npm-upload source zip](https://github.com/mathison42/npm-upload/archive/master.zip) from this GitHub repository.
   4. Extract it and place the contents somewhere safe.
   5. Navigate to the newly extracted folder and run `npm install`.
-    - This will generate a large directory called `node_modules` containing various dependencies.
+      - This will generate a large directory called `node_modules` containing various dependencies.
   6. (Optional) While you are here, also run: `npm link`
-    - This will allow you to call the command from anywhere and not just in this folder.
+      - This will allow you to call the command from anywhere and not just in this folder.
 
 ### Usage
 
