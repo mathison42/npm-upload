@@ -40,7 +40,7 @@ There are two ways to run the npm-upload package.
 
   1. From the extracted package, run:
 
-    npm upload streamable <username> <password> [folder/file]
+    node src/upload.js streamable <username> <password> [folder/file]
 
   2. If the optional 6th step was followed, open up a new terminal and from anywhere run:
 
