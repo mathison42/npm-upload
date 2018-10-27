@@ -29,7 +29,10 @@ Commands:
       ```
   3. Download the [full npm-upload source zip](https://github.com/mathison42/npm-upload/archive/master.zip) from this GitHub repository.
   4. Extract it and place the contents somewhere safe.
-  5. (Optional) Navigate to the newly extracted npm-upload folder and run: `npm link`
+  5. Navigate to the newly extracted folder and run `npm install`.
+    - This will generate a large directory called `node_modules` containing various dependencies.
+  6. (Optional) While you are here, also run: `npm link`
+    - This will allow you to call the command from anywhere and not just in this folder.
 
 ### Usage
 
@@ -39,7 +42,7 @@ There are two ways to run the npm-upload package.
 
     `npm upload streamable <username> <password> [folder/file]`
 
-  2. If the optional 5th step was followed, open up a new terminal and from anywhere run:
+  2. If the optional 6th step was followed, open up a new terminal and from anywhere run:
 
     `upload streamable <username> <password> [folder/file]`
 
