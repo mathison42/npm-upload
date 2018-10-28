@@ -1,7 +1,7 @@
 const fs = require('fs');
 const request = require('request');
+const rp = require('request-promise');
 const path = require('path');
-const md5 = require('md5');
 
 var recordFile;
 var records = [];
@@ -10,31 +10,27 @@ var records = [];
 const populateRecords = () => {
   if (fs.existsSync(recordFile)) {
     var text = fs.readFileSync(recordFile).toString();
-    if (text.trim()) {
-      records = text.split("\n")
-    }
-    else {
-      records = [];
-    }
-    console.log(text);
+    records = text.split("\r\n")
+    records = records.filter(function (el) {
+      return el != null && el != '';
+    });
   }
 }
 
-const addRecord = (file) => {
-  var md5Str = md5(fs.readFileSync(file));
-  fs.appendFile(recordFile, md5Str + "\n", (err) => {
+const addRecord = (name) => {
+  fs.appendFile(recordFile, name + "\r\n", (err) => {
     if (err) throw err;
-    console.log('Added: ' + md5Str);
-    records.push(md5Str);
+    records.push(name);
   });
 }
 
-const doesRecordExist = (md5) => {
-  if (records.includes(md5)) {
-    return true
-  }
-  return false
+const findNewVideos = (videos) => {
+  var result = videos.filter(function(element) {
+    return records.indexOf(element) === -1;
+  });
+  return result
 }
+
 /**
  * @function  [streamable]
  * @returns {list} streamable ids
@@ -44,13 +40,13 @@ const streamable = (username, password, input) => {
   const videos = gatherVideos(input ? input : ".");
 
   if (videos.length == 0) {
-    return console.log("No videos found.");
+    return console.log("No new videos found...");
   }
 
   console.log("Uploading " + videos.length + " video(s)...");
 
   videos.forEach(video => {
-    upload2Streamable(username, password, video, console.log);
+    upload2Streamable(username, password, video, () => {});
   });
 
 };
@@ -82,66 +78,58 @@ const streamableLoopInit = (username, password, folder, secs) => {
 async function streamableLoop (username, password, folder, millisecs) {
 
   const videos = gatherVideos(folder);
+  const newVideos = findNewVideos(videos);
 
-  if (videos.length == 0) {
-    return console.log("No videos found.");
+  console.log(newVideos);
+
+  if (newVideos.length == 0) {
+    console.log("No new videos found...");
+    setTimeout(function(){ streamableLoop (username, password, folder, millisecs); }, millisecs);
+  } else {
+    console.log("Uploading " + newVideos.length + " new video(s)...");
+    await processUploadParallel(username, password, newVideos)
+      .then(_ => setTimeout(function(){ streamableLoop (username, password, folder, millisecs); }, millisecs));
   }
-  console.log("Uploading " + videos.length + " video(s)...");
-  // await upload2Streamable(username, password, videos[0], addRecord);
-  // videos.forEach(video => {
-  //   upload2Streamable(username, password, video, addRecord);
-  // })
-  for (x in videos) {
-    console.log(videos[x].path)
-    await upload2Streamable(username, password, videos[x], addRecord);
-  }
-  // await processUploadParallel (videos, username, password).then(console.log("Done2!"));
-  console.log("Done3!");
-
-  //setTimeout(streamableLoop(username, password, folder, millisecs), millisecs);
-
 }
 
-async function processUploadParallel(videos, username, password) {
+async function processUploadParallel(username, password, videos) {
     const promises = videos.map( video => {
-      if (!doesRecordExist(video)) {
-        upload2Streamable(username, password, video, addRecord);
-      }
+      upload2Streamable(username, password, video, addRecord);
     });
-    return await Promise.all(promises);
+    Promise.all(promises);
+    console.log('1')
 }
 
-// async function processUpload(videos, username, password) {
-//     for (const video of videos) {
-//       if (!doesRecordExist(md5(video))) {
-//         await upload2Streamable(username, password, video, addRecord);
-//       }
-//     }
-//     console.log("DONE!");
-// }
-
+/**
+ * @function  [upload2Streamable]
+ * @returns rp Promise
+ */
 function upload2Streamable(username, password, video, cb) {
-  console.log("Done0!");
-  return new Promise(function(resolve, reject) {
-    request({
+  var videoStream = fs.createReadStream(video)
+ // return new Promise(resolve => setTimeout(resolve, 3000));
+// return console.log(video)
+return new Promise(resolve =>
+    rp({
       method: 'POST',
       url: `https://api.streamable.com/upload`,
-      formData: { video },
+      formData: { videoStream },
       json: true,
       auth: { username, password }
     }, (err, res, body) => {
-      console.log("Done1!");
       if (err) {
         reject(err)
       }
       const { shortcode } = body
-      console.log("Uploaded " + video.path + " with shortcode [" + shortcode + "]");
-      cb(video.path);
+      console.log("Uploaded " + video + " with shortcode [" + shortcode + "]");
+      return cb(video);
     })
-  })
-  // return req
+  );
 }
 
+/**
+ * @function  [gatherVideos]
+ * @returns List of Video paths
+ */
 function gatherVideos(input) {
   var files = [];
   var videos = [];
@@ -162,14 +150,11 @@ function gatherVideos(input) {
 
   files.forEach(file => {
     if (file.endsWith(".mp4")) {
-      console.log(file);
-      videos.push(fs.createReadStream(file));
+      videos.push(file);
     }
   });
   return videos;
 }
-
-// function moveFile(uploadFolder, )
 
 // Export all methods
 module.exports = { streamable, streamableLoopInit};
