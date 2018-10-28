@@ -3,7 +3,7 @@
 const program = require('commander');
 
 // Require logic.js file and extract controller functions using JS destructuring assignment
-const { streamable } = require('./logic');
+const { streamable, streamableLoopInit } = require('./logic');
 
 program
   .version('0.1.0')
@@ -17,5 +17,14 @@ program
     streamable(username, password, file);
   });
 
+
+program
+  .command('streamable-loop <username> <password> [folder]')
+  .option('-s, --seconds <value>', 'Specify a value in seconds to loop in the specified directory. Default: 30', parseInt)
+  .alias('s')
+  .description('Loop through specified folder and add Streamable videos under your account.')
+  .action((username, password, folder, cmd) => {
+    streamableLoopInit(username, password, folder, (cmd.seconds ? cmd.seconds : ''));
+  });
 
 program.parse(process.argv);
