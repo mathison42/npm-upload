@@ -10,10 +10,9 @@
   "bin": "./src/upload.js",
   "dependencies": {
     "commander": "^2.9.0",
-    "inquirer": "^3.0.6",
-    "mongoose": "^4.9.2",
     "fs": "*",
-    "request": "*",
-    "path": "*"
+    "path": "*",
+    "request": "^2.88.0",
+    "request-promise": "*"
   }
 }
