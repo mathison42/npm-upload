@@ -11,9 +11,8 @@
   "dependencies": {
     "commander": "^2.9.0",
     "fs": "*",
-    "md5": "^2.2.1",
     "path": "*",
-    "request": "*",
+    "request": "^2.88.0",
     "request-promise": "*"
   }
 }

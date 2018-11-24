@@ -1,10 +1,10 @@
 const fs = require('fs');
-const request = require('request');
 const rp = require('request-promise');
 const path = require('path');
 
 var recordFile;
 var records = [];
+var looping = false;
 
 
 const populateRecords = () => {
@@ -66,7 +66,7 @@ const streamableLoopInit = (username, password, folder, secs) => {
   if (secs && secs > 10) {
     millisecs = secs * 1000;
   }
-  console.log(millisecs);
+  console.log("Seconds: " + millisecs/1000);
 
   streamableLoop(username, password, folder, millisecs)
 };
@@ -80,24 +80,19 @@ async function streamableLoop (username, password, folder, millisecs) {
   const videos = gatherVideos(folder);
   const newVideos = findNewVideos(videos);
 
-  console.log(newVideos);
-
   if (newVideos.length == 0) {
-    console.log("No new videos found...");
+    console.log(getTime() + " No new videos found...");
     setTimeout(function(){ streamableLoop (username, password, folder, millisecs); }, millisecs);
   } else {
-    console.log("Uploading " + newVideos.length + " new video(s)...");
-    await processUploadParallel(username, password, newVideos)
-      .then(_ => setTimeout(function(){ streamableLoop (username, password, folder, millisecs); }, millisecs));
+    console.log(getTime() + " Uploading " + newVideos.length + " new video(s)...");
+    console.log(newVideos);
+    for (const video of newVideos) {
+      await upload2Streamable(username, password, video, addRecord);
+    }
+    looping = true;
+    // Note: After last upload, addRecord doesn't await. So if timeout isn't used, last video will upload twice.
+    setTimeout(function(){ streamableLoop (username, password, folder, millisecs); }, millisecs);
   }
-}
-
-async function processUploadParallel(username, password, videos) {
-    const promises = videos.map( video => {
-      upload2Streamable(username, password, video, addRecord);
-    });
-    Promise.all(promises);
-    console.log('1')
 }
 
 /**
@@ -106,24 +101,29 @@ async function processUploadParallel(username, password, videos) {
  */
 function upload2Streamable(username, password, video, cb) {
   var videoStream = fs.createReadStream(video)
- // return new Promise(resolve => setTimeout(resolve, 3000));
-// return console.log(video)
-return new Promise(resolve =>
-    rp({
-      method: 'POST',
-      url: `https://api.streamable.com/upload`,
-      formData: { videoStream },
-      json: true,
-      auth: { username, password }
-    }, (err, res, body) => {
-      if (err) {
-        reject(err)
-      }
-      const { shortcode } = body
-      console.log("Uploaded " + video + " with shortcode [" + shortcode + "]");
-      return cb(video);
-    })
-  );
+  return rp({
+    method: 'POST',
+    url: `https://api.streamable.com/upload`,
+    formData: { videoStream },
+    json: true,
+    auth: { username, password }
+  }, (err, res, body) => {
+    if (err) {
+      reject(err)
+    }
+    if (body) {
+        const { shortcode } = body
+        console.log(getTime() + " Uploaded " + video + " with shortcode [" + shortcode + "]");
+        return cb(video);
+    } else {
+        console.log(getTime() + " Failed to upload " + video + ".");
+    }
+  }).catch((error) => {
+    if (error.statusCode != 429) {
+      reject(err)
+    }
+    console.log(getTime() + " [Info] Reached Streamable upload limit. Please try again later.")
+  });
 }
 
 /**
@@ -136,10 +136,12 @@ function gatherVideos(input) {
 
   var stats = fs.lstatSync(input);
   if (stats.isFile()) {
-    console.log("Found file: " + input);
+    if (!looping)
+      console.log("Found file: " + input);
     files.push(input);
   } else if (stats.isDirectory()){
-    console.log("Found directory: " + input);
+    if (!looping)
+      console.log("Found directory: " + input);
     var temp = fs.readdirSync(input);
     temp.forEach( t => {
       files.push(input + path.sep + t);
@@ -154,6 +156,15 @@ function gatherVideos(input) {
     }
   });
   return videos;
+}
+
+/**
+ * @function  [getTime]
+ * @returns Returns current time. [HH:MM:MMM]
+ */
+function getTime() {
+    var date = new Date();
+    return "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]"
 }
 
 // Export all methods
