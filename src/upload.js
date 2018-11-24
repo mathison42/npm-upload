@@ -20,8 +20,8 @@ program
 
 program
   .command('streamable-loop <username> <password> [folder]')
-  .option('-s, --seconds <value>', 'Specify a value in seconds to loop in the specified directory. Default: 30', parseInt)
-  .alias('s')
+  .option('-s, --seconds <value>', ' (Optional) Specify a value, in seconds, to loop in the specified directory. Default: 10', parseInt)
+  .alias('sl')
   .description('Loop through specified folder and add Streamable videos under your account.')
   .action((username, password, folder, cmd) => {
     streamableLoopInit(username, password, folder, (cmd.seconds ? cmd.seconds : ''));
