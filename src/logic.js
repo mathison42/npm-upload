@@ -10,6 +10,7 @@ var looping = false;
 const populateRecords = () => {
   if (fs.existsSync(recordFile)) {
     var text = fs.readFileSync(recordFile).toString();
+	text = text.replace(/ www.streamable.com\/.*\n/g,"/r/n");
     records = text.split("\r\n")
     records = records.filter(function (el) {
       return el != null && el != '';
@@ -17,8 +18,8 @@ const populateRecords = () => {
   }
 }
 
-const addRecord = (name) => {
-  fs.appendFile(recordFile, name + "\r\n", (err) => {
+const addRecord = (name,shortcode) => {
+  fs.appendFile(recordFile, name + " www.streamable.com/" + shortcode + " " + "\r\n", (err) => {
     if (err) throw err;
     records.push(name);
   });
@@ -113,8 +114,8 @@ function upload2Streamable(username, password, video, cb) {
     }
     if (body) {
         const { shortcode } = body
-        console.log(getTime() + " Uploaded " + video + " with shortcode [" + shortcode + "]");
-        return cb(video);
+        console.log(getTime() + " Successfully uploaded " + video + " with shortcode [" + shortcode + "]");
+        return cb(video,shortcode);
     } else {
         console.log(getTime() + " Failed to upload " + video + ".");
     }
